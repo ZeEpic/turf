@@ -1,0 +1,11 @@
+name: Turf
+version: '${project.version}'
+main: me.zeepic.turf.Main
+api-version: 1.18
+authors: [ ZeEpic ]
+description: Kill the most enemies and build the best fort to win the most turf for your team. Based on the Mineplex gamemode with a similar name.
+commands:
+  reset:
+    usage: /<command> [max height = 80] [platform width = 25] [platform height = 64] [team spawn distance = 10]
+    description: Resets the gamemode.
+    permission: op
