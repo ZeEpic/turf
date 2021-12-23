@@ -38,7 +38,7 @@ class Main : JavaPlugin() {
 
     override fun onDisable() {
         // Plugin shutdown logic
-        server.scheduler.cancelTask(Game.timer.timerID)
+        server.scheduler.cancelTask(Game.timerID())
     }
 
 }

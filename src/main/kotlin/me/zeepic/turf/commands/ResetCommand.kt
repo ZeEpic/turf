@@ -1,6 +1,5 @@
 package me.zeepic.turf.commands
 
-import me.zeepic.turf.Main
 import me.zeepic.turf.models.*
 import me.zeepic.turf.util.fill
 import org.bukkit.Bukkit
@@ -13,8 +12,10 @@ class ResetCommand(name: String) : CustomCommand(name) {
 
     override fun executeCommand(player: Player, args: Array<out String>): Boolean {
 
-        Game.players.clear()
-        Bukkit.getScheduler().cancelTask(Game.timer.timerID)
+        if (args.size > 4) return false
+        Game.clearPlayers()
+        Bukkit.getScheduler().cancelTask(Game.timerID())
+        // take only the numbers from the args, and then use that to change the size of the game map
         Game.changeMap(MapSize(args.mapNotNull { it.toIntOrNull() }), player.world)
         val world = Game.world
         Material.AIR.fill(world,
@@ -24,19 +25,19 @@ class ResetCommand(name: String) : CustomCommand(name) {
             Vector(width * 2, platformHeight, width * 2),
             Vector(width * 4, platformHeight, width * 4))
         val startingScore = startFromEnd * 2 + 1
-        Game.Team.values().forEach {
+        Team.values().forEach {
             for (i in 0..(width * 2)) it.fillAt(world, true)
             for (i in 0..startingScore) it.addScore()
         }
         Bukkit.getOnlinePlayers().forEach {
-            val team = Game.Team.random()
-            Game.addPlayer(it, team)
+            val team = Game add it
             it.spawn(team)
             it.sendMessage(team.toString())
         }
         Game.giveBlocks()
         Game.state = GameState.STARTING
-        Game.timer.timerID = Bukkit.getScheduler().scheduleSyncRepeatingTask(Main.instance, Game.timer, 0, 20L)
+        Game.scheduleTimer()
+
         return true
     }
 

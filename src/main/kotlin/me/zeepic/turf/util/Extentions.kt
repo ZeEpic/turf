@@ -6,6 +6,11 @@ fun Vector.compare(other: Vector, function: (Double, Double) -> Double): Vector 
     return Vector(function(x, other.x), function(y, other.y), function(z, other.z))
 }
 
+fun Vector.atY(y: Double): Vector {
+    this.y = y
+    return this
+}
+
 fun Boolean.toInt() = if (this) 1 else 0
 
 fun String.toTitle(): String {

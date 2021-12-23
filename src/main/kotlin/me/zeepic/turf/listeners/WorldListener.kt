@@ -13,7 +13,7 @@ class WorldListener : Listener {
     @EventHandler
     fun onPlace(event: BlockPlaceEvent) {
         if (!Game.state.running) return
-        if (!Game.players.contains(event.player)) return
+        if (!(Game has event.player)) return
         val block = event.block
         val location = block.location.clone()
         location.y = platformHeight.toDouble()
@@ -33,16 +33,16 @@ class WorldListener : Listener {
         }
         val shooter = event.entity.shooter as Player
         if (!Game.state.running) return
-        if (shooter !in Game.players.keys) return
+        if (!(Game has shooter)) return
         val myTeam = (Game team shooter)!!
         if (event.hitBlock == null) {
             val entity = event.hitEntity
             if (entity !is Player) return
-            if (entity !in Game.players.keys) return
+            if (!(Game has entity)) return
             val otherTeam = (Game team entity)!!
             if (otherTeam == myTeam) return // no friendly fire
-            Game.players[shooter]!!.kills += 1
-            Game.players[entity]!!.deaths += 1
+            Game.stat(shooter, "kills", 1)
+            Game.stat(entity, "deaths", 1)
             entity.inventory.clear()
             entity.spawn(otherTeam)
             otherTeam.removeScore()
@@ -51,7 +51,7 @@ class WorldListener : Listener {
             val myMaterial = myTeam.blockType
             val block = event.hitBlock!!
             val hitMaterial = block.type
-            val enemyMaterials = Game.Team.values()
+            val enemyMaterials = Team.values()
                 .map { it.blockType }
                 .filter { it != myMaterial }
             if (hitMaterial in enemyMaterials) {

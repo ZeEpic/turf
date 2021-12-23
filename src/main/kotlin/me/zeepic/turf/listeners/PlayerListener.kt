@@ -10,12 +10,10 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageEvent
+import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.entity.PlayerDeathEvent
-import org.bukkit.event.player.PlayerDropItemEvent
-import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.event.player.PlayerMoveEvent
-import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.event.player.*
 
 class PlayerListener : Listener {
 
@@ -25,7 +23,7 @@ class PlayerListener : Listener {
         event.isCancelled = true
         if (event.cause != EntityDamageEvent.DamageCause.VOID) return
         val entity = event.entity as Player
-        if (Game.players.containsKey(entity)) {
+        if (Game has entity) {
             (Game team entity)!!.teleportToSpawn(entity)
         } else {
             Game.teleportToWorldSpawn(entity)
@@ -41,8 +39,21 @@ class PlayerListener : Listener {
 
     @EventHandler
     fun onDrop(event: PlayerDropItemEvent) {
-        if (event.player.gameMode == GameMode.CREATIVE) return
+        val player = event.player
+        if (player.gameMode == GameMode.CREATIVE) return
+        if (!(Game has player)) return
+        if (event.itemDrop.itemStack.type == (Game team player)!!.blockType) return
         event.isCancelled = true
+    }
+
+    @EventHandler
+    fun onPickup(event: EntityPickupItemEvent) {
+        val entity = event.entity
+        if (entity !is Player) return
+        event.isCancelled = true
+        if (!(Game has entity)) return
+        if (event.item.itemStack.type != (Game team entity)!!.blockType) return
+        event.isCancelled = false
     }
 
     @EventHandler
@@ -58,13 +69,13 @@ class PlayerListener : Listener {
     @EventHandler
     fun onJoin(event: PlayerJoinEvent) {
         val player = event.player
-        Game.resetPlayer(player)
+        Game reset player
         event.joinMessage(Component.text("$player has joined.").color(NamedTextColor.GREEN))
     }
 
     @EventHandler
     fun onQuit(event: PlayerQuitEvent) {
-        Game.players.remove(event.player)
+        Game remove event.player
         event.quitMessage(Component.text("${event.player} has left.").color(NamedTextColor.RED))
     }
 
