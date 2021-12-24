@@ -1,8 +1,6 @@
 package me.zeepic.turf.util
 
-import me.zeepic.turf.Main
 import org.bukkit.Material
-import org.bukkit.NamespacedKey
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemStack
 
@@ -19,14 +17,25 @@ fun ItemStack.unbreakable(): ItemStack {
     return this
 }
 
+fun ItemStack.asAmount(amount: Int): ItemStack {
+    this.amount = amount
+    return this
+}
+
 fun ItemStack.canBreak(material: Material): ItemStack {
     val meta = itemMeta
-    meta.destroyableKeys.add(NamespacedKey(Main.instance, material.toString().lowercase()))
+    val currentKeys = meta.destroyableKeys.toMutableSet()
+    currentKeys.add(material.key)
+    meta.setDestroyableKeys(currentKeys)
+    itemMeta = meta
     return this
 }
 
 fun ItemStack.canPlaceOn(material: Material): ItemStack {
     val meta = itemMeta
-    meta.placeableKeys.add(NamespacedKey(Main.instance, material.toString().lowercase()))
+    val currentKeys = meta.placeableKeys.toMutableSet()
+    currentKeys.add(material.key)
+    meta.setPlaceableKeys(currentKeys)
+    itemMeta = meta
     return this
 }

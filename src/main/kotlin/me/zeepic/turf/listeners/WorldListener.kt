@@ -1,10 +1,13 @@
 package me.zeepic.turf.listeners
 
 import me.zeepic.turf.models.*
+import me.zeepic.turf.util.asAmount
+import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.block.BlockDropItemEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.ProjectileHitEvent
 
@@ -12,6 +15,7 @@ class WorldListener : Listener {
 
     @EventHandler
     fun onPlace(event: BlockPlaceEvent) {
+        if (event.player.gameMode == GameMode.CREATIVE) return
         if (!Game.state.running) return
         if (!(Game has event.player)) return
         val block = event.block
@@ -22,6 +26,19 @@ class WorldListener : Listener {
         if ((block.world.getType(location) != teamType) or (y > maxHeight) or (y <= platformHeight)) {
             event.isCancelled = true
         }
+    }
+
+    @EventHandler
+    fun onBreak(event: BlockDropItemEvent) {
+        if (!Game.state.running) return
+        if (!(Game has event.player)) return
+        val team = (Game team event.player)!!
+        val material = team.blockType
+        val drops = event.items
+            .filterNotNull()
+            .map { it.itemStack.type }
+        if (material !in drops) return
+        event.items.forEach { it.itemStack = team.getPlaceableBlock().asAmount(it.itemStack.amount) }
     }
 
     @EventHandler

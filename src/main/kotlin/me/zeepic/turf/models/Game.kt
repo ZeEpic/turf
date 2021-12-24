@@ -1,10 +1,7 @@
 package me.zeepic.turf.models
 
 import me.zeepic.turf.Main
-import me.zeepic.turf.util.canBreak
-import me.zeepic.turf.util.canPlaceOn
-import me.zeepic.turf.util.unbreakable
-import me.zeepic.turf.util.withEnchantment
+import me.zeepic.turf.util.*
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.*
@@ -78,9 +75,10 @@ object Game {
         clearPlayers()
     }
     fun giveBlocks() {
-        players.forEach { (p, player) -> p.inventory.addItem(ItemStack(player.team.blockType, 64)
-            .canPlaceOn(player.team.blockType)
-            .canPlaceOn(player.team.groundType)) }
+        players.forEach { (p, player) ->
+            p.inventory.remove(player.team.blockType)
+            p.inventory.addItem(player.team.getPlaceableBlock().asAmount(64))
+        }
     }
     fun teleportToWorldSpawn(player: Player) {
         player.teleport(Location(player.world, -2.0, 65.0, -2.0))
@@ -110,6 +108,10 @@ object Game {
             players.keys.forEach { it.sendActionBar(Component.text("${time}s of ${state.toString().lowercase()}.")) }
         }
 
+        fun resetTime() {
+            time = 10
+        }
+
     }
 
     data class GamePlayer(val player: Player, val team: Team, val statMap: Map<String, Int>) {
@@ -133,6 +135,11 @@ object Game {
         width = size._width
         platformHeight = size._platformHeight
         startFromEnd = size._startFromEnd
+    }
+
+    fun resetTimer() {
+        Bukkit.getScheduler().cancelTask(timerID())
+        timer.resetTime()
     }
 
 }

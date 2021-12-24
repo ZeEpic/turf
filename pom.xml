@@ -19,6 +19,7 @@
     </properties>
 
     <build>
+        <finalName>Turf</finalName>
         <sourceDirectory>src/main/kotlin</sourceDirectory>
         <plugins>
             <plugin>

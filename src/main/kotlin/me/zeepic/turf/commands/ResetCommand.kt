@@ -4,6 +4,7 @@ import me.zeepic.turf.models.*
 import me.zeepic.turf.util.fill
 import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
 import org.bukkit.util.Vector
 
@@ -14,27 +15,28 @@ class ResetCommand(name: String) : CustomCommand(name) {
 
         if (args.size > 4) return false
         Game.clearPlayers()
-        Bukkit.getScheduler().cancelTask(Game.timerID())
+        Game.resetTimer()
         // take only the numbers from the args, and then use that to change the size of the game map
         Game.changeMap(MapSize(args.mapNotNull { it.toIntOrNull() }), player.world)
         val world = Game.world
+        world.entities
+            .filter { it.type == EntityType.DROPPED_ITEM }
+            .forEach { it.remove() }
         Material.AIR.fill(world,
             Vector(0, platformHeight, 0),
             Vector(width * 6, platformHeight + maxHeight, width * 6))
         Material.WHITE_CONCRETE.fill(world,
             Vector(width * 2, platformHeight, width * 2),
             Vector(width * 4, platformHeight, width * 4))
-        val startingScore = startFromEnd * 2 + 1
         Team.values().forEach {
-            for (i in 0..(width * 2)) it.fillAt(world, true)
-            for (i in 0..startingScore) it.addScore()
+            it.score = 21
+            for (i in 0 until width * 2) it.fillAt(world, i >= it.score, i)
         }
         Bukkit.getOnlinePlayers().forEach {
             val team = Game add it
             it.spawn(team)
             it.sendMessage(team.toString())
         }
-        Game.giveBlocks()
         Game.state = GameState.STARTING
         Game.scheduleTimer()
 
